@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		* {
+			margin:0;
+			padding:0;
+			font-family: Arial;
+		}
+
+		body {
+			margin:20px;
+		}
+
+		h4 {
+			margin-bottom:10px;
+		}
+
+		.wrapper {
+			display:inline-block;
+		}
+
+		.choice:not(:first-child) {
+			border-top: 1px solid black;
+			padding-top:15px;
+		}
+
+		.choice:not(:last-child) {
+			padding-bottom:15px;
+		}
+		
+		.container {
+			display:inline-block;
+			border:1px solid black;
+			padding:20px;
+		}
+
+		.order {
+			background: bisque;
+			margin-bottom: 10px;
+		}
+
+		.btn {
+			width: 100%;
+			height: 20px;
+			margin-top: 15px;
+		}
+
+		.result {
+			display: block;
+		}
+
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container order">
+			<div class="choice size" id="size">
+				<h4>Выберите размер</h4>
+				<label for="cheese">Маленький</label>
+				<input type="radio" id="smallSize">
+				<label for="cheese">Большой</label>
+				<input type="radio" id="largeSize">
+			</div>
+			<div class="choice stuffing" id="stuffing">
+				<h4>Выберите начинку</h4>
+				<label for="cheese">Сыр</label>
+				<input type="checkbox" id="cheese">
+				<label for="salad">Салат</label>
+				<input type="checkbox" id="salad">
+				<label for="potato">Картошка</label>
+				<input type="checkbox" id="potato">
+			</div>
+			<div class="choice topping" id="topping">
+				<h4>Выберите добавку</h4>
+				<label for="cheese">Майонез</label>
+				<input type="checkbox" id="mayo">
+				<label for="cheese">Приправа</label>
+				<input type="checkbox" id="spice">
+			</div>
+			<input type="submit" id="btn" value="Заказать" class="btn">
+		</div>
+		<div class="container result">
+			<p id="price">Цена:</p>
+			<p id="calories">Калорийность:</p>
+		</div>
+	</div>
+
+	<script>
+		var sizeBlock = document.getElementById("size");
+		var stuffingBlock = document.getElementById("stuffing");
+		var toppingBlock = document.getElementById("topping");
+		var btn = document.getElementById("btn");
+
+		var sizeVariants = sizeBlock.querySelectorAll("input");
+		var stuffingsVariants = stuffingBlock.querySelectorAll("input");
+		var toppingsVariants = toppingBlock.querySelectorAll("input");
+
+		var chosenSizes = [];
+		var chosenStuffings = [];
+		var chosenToppings = [];
+
+		var hamburger;
+
+		// Добавление обработчиков событий
+		function addEvent() {
+			for (var i = 0, len = sizeVariants.length; i < len; i++) {
+				sizeVariants[i].addEventListener("click", chooseSize)
+			}
+			for (var i = 0, len = stuffingsVariants.length; i < len; i++) {
+				stuffingsVariants[i].addEventListener("click", chooseStuffings)
+			}
+			for (var i = 0, len = toppingsVariants.length; i < len; i++) {
+				toppingsVariants[i].addEventListener("click", chooseToppings)
+			}
+			btn.addEventListener("click", getHamburger);
+		};
+		
+
+		function getHamburger() {
+			hamburger = new Hamburger(getSize(), getStuffings(), getToppings());
+			hamburger.calculatePrice();
+			hamburger.calculateCalories();
+		}
+
+// 
+// Выбираем компоненты
+// 
+
+		// Выбор размерера
+		function chooseSize(el) {
+			var a = el.target;
+
+			if (a.checked == true) {
+				chosenSizes.length = 0;
+				chosenSizes.push(a.id)
+				for (var i = 0, len = sizeVariants.length; i < len; i++) {
+					sizeVariants[i].checked = false;
+				}
+				a.checked = true
+			}
+		};
+
+		// Выбор начинки
+		function chooseStuffings(el) {
+			var a = el.target.id
+			if (chosenStuffings.includes(a) == false) {
+				chosenStuffings.push(a)
+			} else {
+				var index = chosenStuffings.indexOf(a);
+				delete chosenStuffings[index]
+			}
+		}
+
+		// Выбор добавки
+		function chooseToppings(el) {
+			var topping = el.target.id
+			if (chosenToppings.includes(topping) == false) {				
+				chosenToppings.push(topping)
+			} else {
+				var index = chosenToppings.indexOf(topping);
+				delete chosenToppings[index]
+			}
+		}
+
+// 
+// Получаем выбранные компоненты
+// 
+
+		// Получить размер
+		function getSize() {
+			var listOfSize = [];
+			var nameOfSize = chosenSizes[0];
+			for (var key in size) {
+				if (key == nameOfSize) {
+					// listOfSize[key] = size[key]
+					listOfSize.push(size[key]);
+				}
+			}
+			return listOfSize
+		}
+
+		// Получить список начинки
+		function getStuffings() {
+			var listOfStuffings = [];
+			var nameOfStuffing;
+			for (var i = 0, len = chosenStuffings.length; i < len; i++) {
+				if (chosenStuffings[i]) {
+					nameOfStuffing = chosenStuffings[i];
+					for (var key in stuffings) {
+						if (key == nameOfStuffing) {
+							// listOfStuffings[key] = stuffings[key]
+							listOfStuffings.push(stuffings[key]);
+						}
+					}
+				}
+			}
+			return listOfStuffings
+		}
+
+		// Получить список добавки
+		function getToppings() {
+			var listOfToppings = [];
+			var nameOfTopping;
+			for (var i = 0, len = chosenToppings.length; i < len; i++) {
+				if (chosenToppings[i]) {
+					nameOfTopping = chosenToppings[i];
+					for (var key in toppings) {
+						if (key == nameOfTopping) {
+							// listOfToppings[key] = toppings[key]
+							listOfToppings.push(toppings[key]);
+						}
+					}
+				}
+			}
+			return listOfToppings
+		}
+
+
+		// Конструктор Hamburger
+		function Hamburger(size, stuffings, toppings) {
+			this.size = size;
+			this.stuffings = stuffings;
+			this.toppings = toppings;
+		}
+
+		// Считаем итоговую цену 
+		Hamburger.prototype.calculatePrice = function() {
+			var totalPrice = 0;
+			for (var i = 0, len = this.size.length; i < len; i++) {
+				totalPrice += this.size[i].price
+			}
+			for (var i = 0, len = this.stuffings.length; i < len; i++) {
+				totalPrice += this.stuffings[i].price
+			}
+			for (var i = 0, len = this.toppings.length; i < len; i++) {
+				totalPrice += this.toppings[i].price
+			}
+
+			var price = document.getElementById("price");
+			price.innerHTML = "Цена: " + totalPrice;
+		};
+
+		// Считаем итоговое колличество калорий
+		Hamburger.prototype.calculateCalories = function() {
+			var totalCalories = 0;
+			for (var i = 0, len = this.size.length; i < len; i++) {
+				totalCalories += this.size[i].calories
+			}
+			for (var i = 0, len = this.stuffings.length; i < len; i++) {
+				totalCalories += this.stuffings[i].calories
+			}
+			for (var i = 0, len = this.toppings.length; i < len; i++) {
+				totalCalories += this.toppings[i].calories
+			}
+
+			var calories = document.getElementById("calories");
+			calories.innerHTML = "Калорийность: " + totalCalories;
+		};
+
+
+		// Конструктор всех компонентов в Hamburger
+		function Components(price, calories) {
+			this.price = price;
+			this.calories = calories;
+		}
+
+		// Создаем все компоненты  
+		var smallSize = new Components(50, 20);
+		var largeSize = new Components(100, 40);
+		var cheese = new Components(10, 20);
+		var salad = new Components(20, 5);
+		var potato = new Components(15, 10);
+		var mayo = new Components(20, 5);
+		var spice = new Components(15, 0);
+
+
+		// Объединяем компоненты по видам
+		var size = {smallSize, largeSize};
+		var stuffings = {cheese, salad, potato};
+		var toppings = {mayo, spice};
+
+
+		window.addEventListener("load", addEvent)
+	</script>
+</body>
+</html>
