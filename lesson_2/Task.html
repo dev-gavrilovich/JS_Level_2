@@ -1,0 +1,137 @@
+<script type="text/javascript">
+function Container() {
+  this.id = "";
+  this.className = "";
+  this.htmlCode = "123";
+}
+
+Container.prototype.render = function() {
+   return this.htmlCode;
+}
+
+
+// **************************** //
+function Menu(my_id, my_class, my_items){
+   Container.call(this);
+   this.id = my_id;
+   this.className = my_class;
+   
+   this.items = my_items;
+}
+
+Menu.prototype = Object.create(Container.prototype);
+Menu.prototype.constructor = Menu;
+
+Menu.prototype.render = function(){
+	var result = "<ul class='"+this.className+"' id='"+this.id+"'>";
+	
+	for(var item in this.items){
+		if(this.items[item] instanceof MenuItem){
+			result += this.items[item].render();
+		} else if (this.items[item] instanceof SubmenuItem) {
+      result += this.items[item].render();
+    }
+  }
+
+	result += "</ul>";
+	
+	return result;
+}
+
+// **************************** //
+function Submenu(my_id, my_class, my_items) {
+  Menu.call(this)
+  this.id = my_id;
+  this.className = my_class;
+  this.items = my_items;
+}
+
+Submenu.prototype = Object.create(Menu.prototype);
+Submenu.prototype.constructor = Submenu;
+
+Submenu.prototype.render = function() {
+  var result = "<ul class='"+this.className+"' id='"+this.id+"'>";
+  
+  for(var item in this.items){
+    if(this.items[item] instanceof MenuItem){
+      result += this.items[item].render();
+    }
+  }
+  result += "</ul></li>";
+  
+  return result;
+}
+
+
+
+// **************************** //
+function MenuItem(my_href, my_name){
+   Container.call(this);
+   this.className = "menu-item";
+   this.href = my_href;
+   this.itemName = my_name;
+}
+
+MenuItem.prototype = Object.create(Container.prototype);
+MenuItem.prototype.constructor = MenuItem;
+
+MenuItem.prototype.render = function(){
+	return "<li class='"+this.className+"' href='"+ this.href +"'>" + this.itemName + "</li>";
+}
+
+// **************************** //
+function SubmenuItem(my_href, my_name){
+   MenuItem.call(this);
+   this.className = "submenu-item";
+   this.href = my_href;
+   this.itemName = my_name;
+}
+
+SubmenuItem.prototype = Object.create(MenuItem.prototype);
+SubmenuItem.prototype.constructor = SubmenuItem;
+
+SubmenuItem.prototype.render = function(){
+  return "<li class='"+this.className+"' href='"+ this.href +"'>" + this.itemName + submenu.render();
+}
+
+
+
+//Fetch
+// fetch('https://api.myjson.com/bins/g2f3q').then(function(response) {
+fetch('https://api.myjson.com/bins/nxk06').then(function(response) {
+  if(response.ok) {  	
+    return response.json();
+  }
+  throw new Error('Network response was not ok.');
+}).then(function(respond) { 
+  var m_items = {};
+  var subm_items = {};
+
+
+  respond.menu_items.map((item, index) => {
+    m_items[index] = new MenuItem(item.href, item.title);
+  })
+  var numOfSub_1 = 2;
+  delete m_items[numOfSub_1];
+  m_items[numOfSub_1] = new SubmenuItem(respond.menu_items[numOfSub_1].href, respond.menu_items[numOfSub_1].title);
+
+  respond.submenu_items.map((item, index) => {
+    subm_items[index] = new MenuItem(item.href, item.title);
+  })
+
+  menu = new Menu('my_menu', 'my_class', m_items);
+  submenu = new Submenu('my_submenu', 'my_class', subm_items);
+
+  document.write(menu.render());
+}).catch(function(error) {
+  console.log('There has been a problem with your fetch operation: ' + error.message);
+});
+
+var menu;
+var submenu;
+
+</script>
+
+
+
+
